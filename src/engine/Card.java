@@ -28,7 +28,7 @@ public class Card {
         throw new RuntimeException("Invalid card !" + rank + " " + suit);
     }
     private static String cardKey(final Rank rank, final Suit suit){
-        return String.format(" %s of %s", rank, suit);
+        return String.format(" %s OF %s", rank, suit);
     }
     private Card(final Rank rank, final Suit suit){
         this.rank = rank;
@@ -37,7 +37,7 @@ public class Card {
 
     @Override
     public String toString(){
-        return String.format(" %s of %s", this.rank, this.suit);
+        return String.format(" %s OF %s", this.rank, this.suit);
     }
 
     public Rank getRank() {

@@ -5,7 +5,7 @@ import java.util.*;
 public class Deck {
 
     private final Stack<Card> deckCards;
-    protected Deck(){
+    public Deck(){
         this.deckCards = initDeck();
         Collections.shuffle(this.deckCards);
     }
