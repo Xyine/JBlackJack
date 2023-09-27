@@ -1,16 +1,19 @@
+package engine;
+
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class BlackJack {
+    Player joueur = new Player();
+    Player dealer = new Player();
     public BlackJack() {
         Scanner scanner = new Scanner(System.in);
+        final Deck deck = new Deck();
 
         while (true) {
-            final Deck deck = new Deck();
+
             final int numCardToDeal = 4;
-            int playerHandValue = 0;
-            int dealerHandValue = 0;
 
             System.out.println("Welcome to Blackjack!");
 
@@ -20,21 +23,21 @@ public class BlackJack {
                 if (optionalCard.isPresent() && i <= 1) {
                     Card card = optionalCard.get();
                     System.out.println("You were dealt: " + card);
-                    playerHandValue += card.getRank().getRankValue();
+                    joueur.addToHand(card); ;
                 } else if (optionalCard.isPresent()) {
                     Card card = optionalCard.get();
                     System.out.println("the dealer was dealt: " + card);
-                    dealerHandValue += card.getRank().getRankValue();
+                    dealer.addToHand(card);
                 } else {
                     System.out.println("The deck is empty.");
                     return; // End the game if the deck is empty
                 }
             }
-            while (playerHandValue < 21 && dealerHandValue < 21) {
+            while (joueur.calculateHandValue() < 21 && dealer.calculateHandValue() < 21) {
                 System.out.println("Do you want another card? [Y/N]");
                 String inputLine = scanner.nextLine().trim();
                 if (Objects.equals(inputLine, "N") || Objects.equals(inputLine, "n")) {
-                    if (dealerHandValue > playerHandValue) {
+                    if (dealer.calculateHandValue() > joueur.calculateHandValue()) {
                         break;
                     } else {
                         System.out.println("Dealer play :");
@@ -46,9 +49,9 @@ public class BlackJack {
                     if (optionalPlayerCard.isPresent()) {
                         Card card = optionalPlayerCard.get();
                         System.out.println("You were dealt: " + card);
-                        playerHandValue += card.getRank().getRankValue();
-                        System.out.println("Your current hand value: " + playerHandValue);
-                        if (playerHandValue > 21) {
+                        joueur.addToHand(card);
+                        System.out.println("Your current hand value: " + joueur.calculateHandValue());
+                        if (joueur.calculateHandValue() > 21) {
                             break;
                         }
                     } else {
@@ -57,13 +60,13 @@ public class BlackJack {
                     }
                 }
 
-                if (dealerHandValue < playerHandValue) {
+                if (dealer.calculateHandValue() < joueur.calculateHandValue()) {
                     Optional<Card> optionalCard = deck.deal();
                     if (optionalCard.isPresent()) {
                         Card card = optionalCard.get();
                         System.out.println("the dealer was dealt: " + card);
-                        dealerHandValue += card.getRank().getRankValue();
-                        System.out.println("Dealer current hand value: " + dealerHandValue);
+                        dealer.addToHand(card);
+                        System.out.println("Dealer current hand value: " + dealer.calculateHandValue());
                     } else {
                         System.out.println("The deck is empty.");
                         return; // End the game if the deck is empty
@@ -72,18 +75,18 @@ public class BlackJack {
                     System.out.println("dealer pass !");
                 }
             }
-            if ((playerHandValue > dealerHandValue && playerHandValue <= 21) || dealerHandValue > 21) {
+            if ((joueur.calculateHandValue() > dealer.calculateHandValue() && joueur.calculateHandValue() <= 21) || dealer.calculateHandValue() > 21) {
                 System.out.println("you win");
             }
-            if (playerHandValue > 21) {
+            if (joueur.calculateHandValue() > 21) {
                 System.out.println("Bust! Your hand value exceeds 21.");
             } else {
-                System.out.println("Your final hand value: " + playerHandValue);
+                System.out.println("Your final hand value: " + joueur.calculateHandValue());
             }
-            if (playerHandValue < dealerHandValue && dealerHandValue < 21) {
+            if (joueur.calculateHandValue() < dealer.calculateHandValue() && dealer.calculateHandValue() < 21) {
                 System.out.println("You forfeit ?!");
             }
-            if (playerHandValue == dealerHandValue) {
+            if (joueur.calculateHandValue() == dealer.calculateHandValue()) {
                 System.out.println("Equality");
             }
             System.out.println("Do you want to play again? [Y/N]");
