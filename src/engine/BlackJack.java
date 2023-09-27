@@ -23,7 +23,7 @@ public class BlackJack {
                 if (optionalCard.isPresent() && i <= 1) {
                     Card card = optionalCard.get();
                     System.out.println("You were dealt: " + card);
-                    joueur.addToHand(card); ;
+                    joueur.addToHand(card);
                 } else if (optionalCard.isPresent()) {
                     Card card = optionalCard.get();
                     System.out.println("the dealer was dealt: " + card);

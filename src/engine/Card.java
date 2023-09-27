@@ -54,9 +54,6 @@ public class Card {
         Suit(final int suitValue){
             this.suitValue = suitValue;
         }
-        public int getSuitValue(){
-            return this.suitValue;
-        }
     }
     enum Rank{
         TWO(2),

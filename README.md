@@ -1,2 +1,2 @@
 # JBlackJack
-A BlackJack game in java.
+A engine.BlackJack game in java.
