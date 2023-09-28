@@ -13,8 +13,9 @@ public class Player {
     public void addToHand(Card card) {
         hand.add(card);
     }
-
-
+    public void clearHand(){
+        hand.clear();
+    }
     public int calculateHandValue() {
         int value = 0;
         int numAces = 0;

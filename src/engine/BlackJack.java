@@ -1,7 +1,5 @@
 package engine;
 
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Scanner;
 
 public class BlackJack {
@@ -16,6 +14,5 @@ public class BlackJack {
     public BlackJack() {
         Scanner scanner = new Scanner(System.in);
         deck = new Deck();
-
     }
 }

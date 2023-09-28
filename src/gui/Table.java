@@ -1,13 +1,11 @@
 package gui;
 
-import engine.BlackJack;
 import engine.Card;
 import engine.Deck;
+import engine.Player;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Optional;
 
 public class Table extends JPanel {
@@ -20,9 +18,11 @@ public class Table extends JPanel {
     private int TILE_PLAYER_ID = 10;
     private int maxPass = 0;
     private boolean turn = true;
+    private boolean winMessage = false;
+    private final Player dealer = new Player();
+    private final Player joueur = new Player();
     private final JLabel[] tiles; // Array to store tile labels
-
-    private Deck deck;
+    private final Deck deck;
 
     public Table(Deck deck) {
         this.deck = deck;
@@ -32,6 +32,7 @@ public class Table extends JPanel {
         JPanel tilePanel = new JPanel();
         tilePanel.setLayout(new GridLayout(4, 5));
         tiles = new JLabel[NUM_TILES]; // Initialize the array for tiles
+
         // Create 20 tiles
         for (int i = 0; i < NUM_TILES; i++) {
             tiles[i] = createTile(i);
@@ -48,6 +49,8 @@ public class Table extends JPanel {
         gameLog.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(gameLog);
         JPanel buttonPanel = new JPanel();
+        JButton newGameButton = new JButton("New Game");
+        buttonPanel.add(newGameButton);
         buttonPanel.add(dealToDealer);
         buttonPanel.add(dealToPlayer);
         buttonPanel.add(passButton);
@@ -55,42 +58,129 @@ public class Table extends JPanel {
         controlPanel.add(scrollPane, BorderLayout.CENTER);
         add(controlPanel, BorderLayout.SOUTH);
 
-        // Add action listeners to the buttons
-        dealToDealer.addActionListener(new ActionListener() {
+        newGameButton.addActionListener(e -> {
+            resetGame();
+            gameLog.setText(""); // Clear the game log
+            gameLog.append(HandValue(dealer));
+            gameLog.append(HandValue(joueur));
+        });
 
-            public void actionPerformed(ActionEvent e) {
-                if(turn) {
-                    dealCard(0);
+        // Add action listeners to the buttons
+        dealToDealer.addActionListener(e -> {
+            if ( dealer.calculateHandValue() < 21 && joueur.calculateHandValue() < 21 && dealer.calculateHandValue() > 2 && joueur.calculateHandValue() > 2) {
+                if (turn) {
+                    dealCard(0, dealer);
+                    if (calculateWin(dealer)) {
+                        if(!winMessage) {
+                            gameLog.append("Dealer Win !!! \n");
+                            winMessageSent();
+                        }
+                    }
+                    gameLog.append(HandValue(dealer));
                 } else {
                     gameLog.append(" it's the player turn\n");
                 }
             }
         });
-        dealToPlayer.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if(!turn) {
-                    dealCard(10);
+
+        dealToPlayer.addActionListener(e -> {
+            if (dealer.calculateHandValue() < 21 && joueur.calculateHandValue() < 21 && dealer.calculateHandValue() > 2 && joueur.calculateHandValue() > 2) {
+                if (!turn) {
+                    dealCard(10, joueur);
+                    if (calculateWin(joueur)) {
+                        if(!winMessage) {
+                            gameLog.append("Joueur Win !!!\n");
+                            winMessageSent();
+                        }
+                    }
+                    gameLog.append(HandValue(joueur));
                 } else {
                     gameLog.append("it's the dealer turn\n");
                 }
             }
         });
-        passButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if(maxPass == 1){
-                    gameLog.append("you forfeit ?!\n");
-                }else{
+        passButton.addActionListener(e -> {
+            if(dealer.calculateHandValue() > 2 && joueur.calculateHandValue() > 2) {
+                gameLog.append(calculateLose());
+                if (maxPass == 1) {
+                    gameLog.append(ff());
+                    gameLog.append("You forfeit ?!\n");
+                } else {
                     pass();
                 }
             }
         });
     }
+    private void dealInitialCards() {
+        for (int i = 0; i < 2; i++) {
+            dealCard(0, dealer);
+            dealCard(10, joueur);
+        }
+    }
+    private void winMessageSent(){
+        winMessage = true;
+    }
+    private void resetGame() {
+        // Clear the player's and dealer's hands
+        dealer.clearHand();
+        joueur.clearHand();
 
+        // Clear the displayed card images on the tiles
+        for (int i = 0; i < NUM_TILES; i++) {
+            tiles[i].setIcon(null);
+        }
+
+        // Reset other game-related variables
+        TILE_DEALER_ID = 0;
+        TILE_PLAYER_ID = 10;
+        maxPass = 0;
+        turn = true;
+
+        // Start a new game by dealing the initial cards
+        dealInitialCards();
+    }
+
+
+    private Boolean calculateWin(Player player){
+        if( player.calculateHandValue() == 21 ){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    private String HandValue(Player player){
+        return name(player) + "hand value is " + player.calculateHandValue() + "\n";
+    }
+    public String name(Player player){
+        if(player == joueur){
+            return "Joueur ";
+        } else if(player == dealer){
+            return "Dealer ";
+        }
+        return "";
+    }
+    private String calculateLose(){
+        if(joueur.calculateHandValue() > 21){
+            return "Joueur lose :( \n";
+        } else if(dealer.calculateHandValue() > 21){
+            return "Dealer lose :(\n";
+        }
+        return "";
+    }
+
+    private String ff(){
+        if (joueur.calculateHandValue() > dealer.calculateHandValue()){
+            return "Joueur win !!!\n";
+        } else if (dealer.calculateHandValue() > joueur.calculateHandValue()){
+            return "dealer win !!!\n";
+        }
+        return "";
+    }
     private void pass(){
         maxPass++;
         turn = !turn;
     }
-    private void dealCard(int OFFSET) {
+    private void dealCard(int OFFSET, Player player) {
         maxPass = 0;
         Optional<Card> optionalCard = deck.deal();
         if (optionalCard.isPresent()) {
@@ -99,10 +189,12 @@ public class Table extends JPanel {
             String imagePath = "CARDS/" + cardName + ".jpg";
             if (OFFSET == 0 && TILE_DEALER_ID < 10) {
                     displayCardImage(imagePath, TILE_DEALER_ID);
+                    player.addToHand(card);
                     TILE_DEALER_ID++;
                     turn = false;
             } else if (OFFSET == 10 && TILE_PLAYER_ID < 20) {
                 displayCardImage(imagePath, TILE_PLAYER_ID);
+                player.addToHand(card);
                 TILE_PLAYER_ID++;
                 turn = true;
             }
